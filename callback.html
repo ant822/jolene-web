@@ -1,23 +1,56 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.3">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 48.0px 'Brush Script MT'; color: #e42b87; -webkit-text-stroke: #e42b87}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 12.0px 'Helvetica Neue'; -webkit-text-stroke: #000000; min-height: 15.0px}
-    p.p3 {margin: 0.0px 0.0px 10.0px 0.0px; text-align: center; font: 18.0px 'Helvetica Neue'; color: #2a3140; -webkit-text-stroke: #2a3140}
-    p.p4 {margin: 0.0px 0.0px 30.0px 0.0px; text-align: center; font: 14.0px 'Helvetica Neue'; color: #585e6d; -webkit-text-stroke: #585e6d}
-    span.s1 {font-kerning: none}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jolene - Email Verified!</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { text-align: center; max-width: 400px; }
+        .logo { font-family: 'Brush Script MT', cursive; font-size: 56px; color: #EC4899; margin-bottom: 30px; }
+        .emoji { font-size: 64px; margin-bottom: 20px; }
+        .message { font-size: 22px; color: #374151; margin-bottom: 10px; font-weight: 600; }
+        .submessage { font-size: 16px; color: #6B7280; margin-bottom: 30px; }
+        .button {
+            display: inline-block;
+            background: #EC4899;
+            color: white;
+            padding: 16px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+        }
+        .secondary-text { font-size: 14px; color: #9CA3AF; margin-top: 20px; }
+    </style>
 </head>
 <body>
-<p class="p1"><span class="s1">Jolene</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p3"><span class="s1">Verifying your email...</span></p>
-<p class="p4"><span class="s1">Please wait a moment</span></p>
+    <div class="container">
+        <div class="logo">Jolene</div>
+        <div class="emoji">✅</div>
+        <p class="message">Email Verified!</p>
+        <p class="submessage">Tap the button below to open the app and log in</p>
+        <a id="openAppBtn" href="jolene://auth/callback" class="button">Open Jolene App</a>
+        <p class="secondary-text">If the app doesn't open, make sure Jolene is installed</p>
+    </div>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const hash = window.location.hash;
+        let appUrl = 'jolene://auth/callback';
+        if (params.toString()) appUrl += '?' + params.toString();
+        if (hash) appUrl += hash;
+        document.getElementById('openAppBtn').href = appUrl;
+        setTimeout(() => { window.location.href = appUrl; }, 500);
+    </script>
 </body>
 </html>
