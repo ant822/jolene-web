@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -38,18 +38,15 @@
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     async function verify() {
-      // Get token_hash from query params (from email link)
       const urlParams = new URLSearchParams(window.location.search);
       const tokenHash = urlParams.get('token_hash');
       const type = urlParams.get('type') || 'signup';
       
-      // Also check hash fragment (fallback)
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
       
       try {
-        // Method 1: Verify with token_hash (from email)
         if (tokenHash) {
           const { data, error } = await sb.auth.verifyOtp({
             token_hash: tokenHash,
@@ -63,11 +60,9 @@
             return;
           }
           
-          // Success! Email is now verified
           document.getElementById('loading').style.display = 'none';
           document.getElementById('success').style.display = 'block';
           
-          // Build deep link with session tokens
           if (data.session) {
             const link = 'jolene://auth/callback#access_token=' + data.session.access_token + '&refresh_token=' + data.session.refresh_token + '&type=signup';
             document.getElementById('openBtn').href = link;
@@ -79,7 +74,6 @@
           return;
         }
         
-        // Method 2: Set session with access/refresh tokens (fallback)
         if (accessToken && refreshToken) {
           const { error } = await sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
           if (!error) {
@@ -92,7 +86,6 @@
           }
         }
         
-        // No valid tokens found
         document.getElementById('loading').style.display = 'none';
         document.getElementById('error').style.display = 'block';
         document.getElementById('errorMsg').textContent = 'No verification token found. Link may be invalid.';
@@ -107,6 +100,3 @@
   </script>
 </body>
 </html>
-
-
-
