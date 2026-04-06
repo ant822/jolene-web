@@ -1,4 +1,3 @@
-<html
 <!DOCTYPE html>
 <html>
 <head>
@@ -33,10 +32,8 @@
       
       document.getElementById('btn').href = link;
       
-      // Try to open app immediately
       window.location.href = link;
       
-      // After 2 seconds, show manual button
       setTimeout(function() {
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('msg').textContent = 'Tap the button to open Jolene';
