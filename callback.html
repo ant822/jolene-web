@@ -1,56 +1,123 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jolene - Email Verified!</title>
+    <title>Email Verified - Jolene</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 100%);
+            background: linear-gradient(135deg, #FDF2F8 0%, #F0FDFA 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
-        .container { text-align: center; max-width: 400px; }
-        .logo { font-family: 'Brush Script MT', cursive; font-size: 56px; color: #EC4899; margin-bottom: 30px; }
-        .emoji { font-size: 64px; margin-bottom: 20px; }
-        .message { font-size: 22px; color: #374151; margin-bottom: 10px; font-weight: 600; }
-        .submessage { font-size: 16px; color: #6B7280; margin-bottom: 30px; }
-        .button {
-            display: inline-block;
-            background: #EC4899;
-            color: white;
-            padding: 16px 40px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 18px;
-            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+        .container {
+            background: white;
+            border-radius: 24px;
+            padding: 48px 32px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(236, 72, 153, 0.15);
         }
-        .secondary-text { font-size: 14px; color: #9CA3AF; margin-top: 20px; }
+        .icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #EC4899 0%, #14B8A6 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 40px;
+        }
+        h1 {
+            color: #1F2937;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        p {
+            color: #6B7280;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 16px 48px;
+            border-radius: 50px;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .subtitle {
+            color: #9CA3AF;
+            font-size: 14px;
+            margin-top: 24px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">Jolene</div>
-        <div class="emoji">✅</div>
-        <p class="message">Email Verified!</p>
-        <p class="submessage">Tap the button below to open the app and log in</p>
-        <a id="openAppBtn" href="jolene://auth/callback" class="button">Open Jolene App</a>
-        <p class="secondary-text">If the app doesn't open, make sure Jolene is installed</p>
+        <div class="icon">✓</div>
+        <h1>Email Verified!</h1>
+        <p>Your email has been verified successfully. Tap the button below to open the app and complete your account setup.</p>
+        <button class="btn" onclick="openApp()">Open Jolene App</button>
+        <p class="subtitle">You'll be taken to choose your username</p>
     </div>
+
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const hash = window.location.hash;
-        let appUrl = 'jolene://auth/callback';
-        if (params.toString()) appUrl += '?' + params.toString();
-        if (hash) appUrl += hash;
-        document.getElementById('openAppBtn').href = appUrl;
-        setTimeout(() => { window.location.href = appUrl; }, 500);
+        // Get tokens from URL hash (Supabase puts them there)
+        function getTokensFromUrl() {
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            return {
+                access_token: params.get('access_token'),
+                refresh_token: params.get('refresh_token'),
+                type: params.get('type')
+            };
+        }
+
+        // Open the app with tokens
+        function openApp() {
+            const tokens = getTokensFromUrl();
+            let deepLink = 'jolene://auth/callback';
+            
+            // If we have tokens, include them in the deep link
+            if (tokens.access_token && tokens.refresh_token) {
+                deepLink += '#access_token=' + encodeURIComponent(tokens.access_token) 
+                         + '&refresh_token=' + encodeURIComponent(tokens.refresh_token);
+                if (tokens.type) {
+                    deepLink += '&type=' + encodeURIComponent(tokens.type);
+                }
+            }
+            
+            console.log('Opening deep link:', deepLink);
+            window.location.href = deepLink;
+        }
+
+        // Auto-open after 1 second (optional - gives user time to see the page)
+        // setTimeout(openApp, 1000);
     </script>
 </body>
 </html>
