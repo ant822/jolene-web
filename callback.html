@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -38,24 +38,70 @@
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     async function verify() {
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      const access = params.get('access_token');
-      const refresh = params.get('refresh_token');
+      // Get token_hash from query params (from email link)
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenHash = urlParams.get('token_hash');
+      const type = urlParams.get('type') || 'signup';
       
-      if (access && refresh) {
-        const { error } = await sb.auth.setSession({ access_token: access, refresh_token: refresh });
-        if (!error) {
+      // Also check hash fragment (fallback)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      
+      try {
+        // Method 1: Verify with token_hash (from email)
+        if (tokenHash) {
+          const { data, error } = await sb.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: type
+          });
+          
+          if (error) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('errorMsg').textContent = error.message;
+            return;
+          }
+          
+          // Success! Email is now verified
           document.getElementById('loading').style.display = 'none';
           document.getElementById('success').style.display = 'block';
-          const link = 'jolene://auth/callback#access_token=' + access + '&refresh_token=' + refresh;
-          document.getElementById('openBtn').href = link;
-          setTimeout(() => { window.location.href = link; }, 500);
+          
+          // Build deep link with session tokens
+          if (data.session) {
+            const link = 'jolene://auth/callback#access_token=' + data.session.access_token + '&refresh_token=' + data.session.refresh_token + '&type=signup';
+            document.getElementById('openBtn').href = link;
+            setTimeout(() => { window.location.href = link; }, 500);
+          } else {
+            document.getElementById('openBtn').href = 'jolene://';
+            setTimeout(() => { window.location.href = 'jolene://'; }, 500);
+          }
           return;
         }
+        
+        // Method 2: Set session with access/refresh tokens (fallback)
+        if (accessToken && refreshToken) {
+          const { error } = await sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (!error) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('success').style.display = 'block';
+            const link = 'jolene://auth/callback#access_token=' + accessToken + '&refresh_token=' + refreshToken;
+            document.getElementById('openBtn').href = link;
+            setTimeout(() => { window.location.href = link; }, 500);
+            return;
+          }
+        }
+        
+        // No valid tokens found
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('errorMsg').textContent = 'No verification token found. Link may be invalid.';
+        
+      } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('errorMsg').textContent = err.message || 'An error occurred';
       }
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('error').style.display = 'block';
     }
     verify();
   </script>
