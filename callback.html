@@ -13,8 +13,7 @@
     .title { color: #10B981; font-size: 22px; font-weight: 600; margin-bottom: 10px; }
     .msg { color: #6B7280; font-size: 16px; margin-bottom: 25px; line-height: 1.5; }
     .btn { display: block; background: #EC4899; color: white; padding: 16px 40px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 18px; margin: 10px auto; }
-    .btn-secondary { background: #14B8A6; }
-    .divider { color: #9CA3AF; font-size: 14px; margin: 15px 0; }
+    .btn-expo { background: #14B8A6; }
   </style>
 </head>
 <body>
@@ -22,17 +21,15 @@
     <div class="logo">Jolene</div>
     <div class="check">✓</div>
     <div class="title">Email Verified!</div>
-    <p class="msg">Your email has been confirmed. Open the app to continue.</p>
+    <p class="msg">Your email has been confirmed successfully.</p>
     <a class="btn" id="prodBtn">Open Jolene App</a>
-    <div class="divider">— or for testing —</div>
-    <a class="btn btn-secondary" href="https://expo.dev/go" target="_blank">Open Expo Go</a>
+    <a class="btn btn-expo" href="exp://local-fashion-nz.ngrok.io">Open in Expo Go</a>
   </div>
   <script>
     (function() {
       var params = window.location.search;
       var hash = window.location.hash;
-      var prodLink = 'jolene://auth/callback' + params + hash;
-      document.getElementById('prodBtn').href = prodLink;
+      document.getElementById('prodBtn').href = 'jolene://auth/callback' + params + hash;
     })();
   </script>
 </body>
