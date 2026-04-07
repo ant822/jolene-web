@@ -20,7 +20,7 @@
   <div class="card">
     <div class="logo">Jolene</div>
     <div class="spinner" id="spinner"></div>
-    <p class="msg" id="msg">Opening Jolene app...</p>
+    <p class="msg" id="msg">Preparing verification...</p>
     <a class="btn" id="btn" style="display:none;">Open Jolene App</a>
     <p class="sub" id="sub"></p>
   </div>
@@ -32,14 +32,19 @@
       
       document.getElementById('btn').href = link;
       
-      window.location.href = link;
+      // Wait 1.5 seconds before redirecting (gives app time to initialize)
+      setTimeout(function() {
+        document.getElementById('msg').textContent = 'Opening Jolene app...';
+        window.location.href = link;
+      }, 1500);
       
+      // Show manual button after 4 seconds
       setTimeout(function() {
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('msg').textContent = 'Tap the button to open Jolene';
         document.getElementById('btn').style.display = 'inline-block';
         document.getElementById('sub').textContent = 'If the app opened, you can close this page.';
-      }, 2000);
+      }, 4000);
     })();
   </script>
 </body>
