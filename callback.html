@@ -1,46 +1,101 @@
-<The issue is with how the hash fragment is handled. Let me fix the GitHub callback to encode the tokens properly:
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jolene - Email Verified</title>
+  <title>Jolene - Verifying...</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, sans-serif; background: #FDF2F8; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
     .card { background: white; border-radius: 24px; padding: 40px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 10px 40px rgba(236,72,153,0.15); }
     .logo { font-family: 'Brush Script MT', cursive; font-size: 48px; color: #EC4899; margin-bottom: 10px; }
-    .check { font-size: 60px; margin: 20px 0; }
-    .title { color: #10B981; font-size: 22px; font-weight: 600; margin-bottom: 10px; }
+    .icon { font-size: 60px; margin: 20px 0; }
+    .spinner { width: 50px; height: 50px; border: 4px solid #FDF2F8; border-top-color: #EC4899; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .title { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
+    .title-success { color: #10B981; }
+    .title-error { color: #EF4444; }
     .msg { color: #6B7280; font-size: 16px; margin-bottom: 25px; line-height: 1.5; }
     .btn { display: block; background: #EC4899; color: white; padding: 16px 40px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 18px; margin: 10px auto; }
     .btn-expo { background: #14B8A6; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo">Jolene</div>
-    <div class="check">✓</div>
-    <div class="title">Email Verified!</div>
-    <p class="msg">Your email has been confirmed successfully.</p>
-    <a class="btn" id="prodBtn">Open Jolene App</a>
-    <a class="btn btn-expo" id="expoBtn">Open in Expo Go</a>
+    
+    <div id="loading">
+      <div class="spinner"></div>
+      <div class="title">Verifying Email...</div>
+      <p class="msg">Please wait a moment.</p>
+    </div>
+    
+    <div id="success" class="hidden">
+      <div class="icon">✓</div>
+      <div class="title title-success">Email Verified!</div>
+      <p class="msg">Your email has been confirmed. You can now sign in.</p>
+      <a class="btn" id="prodBtn">Open Jolene App</a>
+      <a class="btn btn-expo" href="exp://local-fashion-nz.ngrok.io">Open in Expo Go</a>
+    </div>
+    
+    <div id="error" class="hidden">
+      <div class="icon">✗</div>
+      <div class="title title-error">Verification Failed</div>
+      <p class="msg" id="errorMsg">Something went wrong. Please try again.</p>
+      <a class="btn" href="exp://local-fashion-nz.ngrok.io">Open Jolene App</a>
+    </div>
   </div>
+  
   <script>
-    (function() {
-      // Get hash params (Supabase puts tokens in hash)
-      var hash = window.location.hash.substring(1);
-      var params = window.location.search;
-      
-      // Convert hash to query string format for Expo
-      var tokenParams = hash ? '?' + hash : params;
-      
-      // Production app link
-      document.getElementById('prodBtn').href = 'jolene://auth/callback' + params + window.location.hash;
-      
-      // Expo Go link - put tokens in query string since hash doesn't transfer well
-      document.getElementById('expoBtn').href = 'exp://local-fashion-nz.ngrok.io/--/auth/callback' + tokenParams;
-    })();
+    const SUPABASE_URL = 'https://uvefnpxlolyhfvxmlrmq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2ZWZucHhsb2x5aGZ2eG1scm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODgzNzEsImV4cCI6MjA5MDE2NDM3MX0._T33MOe7-My0uE-9GKGmuh8nOUJQbRfJlbXJySNYIjs';
+    
+    async function verifyEmail() {
+      try {
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const hash = window.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+        
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        const tokenHash = params.get('token_hash');
+        const type = params.get('type') || 'signup';
+        
+        let success = false;
+        
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+          success = !error;
+        } else if (tokenHash) {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: type
+          });
+          success = !error;
+        }
+        
+        document.getElementById('loading').classList.add('hidden');
+        
+        if (success) {
+          document.getElementById('success').classList.remove('hidden');
+          document.getElementById('prodBtn').href = 'jolene://auth/callback' + window.location.search + window.location.hash;
+        } else {
+          document.getElementById('error').classList.remove('hidden');
+        }
+      } catch (e) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('error').classList.remove('hidden');
+        document.getElementById('errorMsg').textContent = e.message || 'Verification failed. Please try again.';
+      }
+    }
+    
+    verifyEmail();
   </script>
 </body>
 </html>
