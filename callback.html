@@ -1,64 +1,33 @@
-Update that file (/jolene-web/callback.html in your GitHub repo) with this code that verifies on the web page first:
+Now for the GitHub callback.html, what was working with build 63? Here's a simple version that passes tokens to the app:
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jolene - Verifying...</title>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <title>Jolene</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, sans-serif; background: #FDF2F8; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .card { background: white; border-radius: 24px; padding: 40px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 10px 40px rgba(236,72,153,0.15); }
-    .logo { font-family: 'Brush Script MT', cursive; font-size: 48px; color: #EC4899; margin-bottom: 10px; }
-    .icon { font-size: 60px; margin: 20px 0; }
-    .spinner { width: 50px; height: 50px; border: 4px solid #FDF2F8; border-top-color: #EC4899; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+    body { font-family: -apple-system, sans-serif; background: #FDF2F8; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .card { background: white; border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(236,72,153,0.15); }
+    .logo { font-family: 'Brush Script MT', cursive; font-size: 48px; color: #EC4899; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #FDF2F8; border-top-color: #EC4899; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .title { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
-    .success { color: #10B981; }
-    .msg { color: #6B7280; font-size: 16px; margin-bottom: 25px; line-height: 1.5; }
-    .btn { display: block; background: #EC4899; color: white; padding: 16px 40px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 18px; margin: 10px auto; }
-    .btn-expo { background: #14B8A6; }
-    .hidden { display: none; }
+    .msg { color: #6B7280; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo">Jolene</div>
-    <div id="loading">
-      <div class="spinner"></div>
-      <div class="title">Verifying...</div>
-    </div>
-    <div id="success" class="hidden">
-      <div class="icon">✓</div>
-      <div class="title success">Email Verified!</div>
-      <p class="msg">Tap below to continue to the app.</p>
-      <a class="btn" id="prodBtn">Open Jolene App</a>
-      <a class="btn btn-expo" id="expoBtn">Open in Expo Go</a>
-    </div>
+    <div class="spinner"></div>
+    <p class="msg">Opening app...</p>
   </div>
   <script>
-    const SUPABASE_URL = 'https://uvefnpxlolyhfvxmlrmq.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2ZWZucHhsb2x5aGZ2eG1scm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODgzNzEsImV4cCI6MjA5MDE2NDM3MX0._T33MOe7-My0uE-9GKGmuh8nOUJQbRfJlbXJySNYIjs';
-    
-    (async function() {
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
+    (function() {
+      var hash = window.location.hash;
+      var expoLink = 'exp://local-fashion-nz.ngrok.io/--/auth/callback' + hash;
+      var prodLink = 'jolene://auth/callback' + hash;
       
-      const accessToken = params.get('access_token');
-      const refreshToken = params.get('refresh_token');
-      
-      if (accessToken && refreshToken) {
-        await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-      }
-      
-      document.getElementById('loading').classList.add('hidden');
-      document.getElementById('success').classList.remove('hidden');
-      
-      const tokenParams = '?access_token=' + accessToken + '&refresh_token=' + refreshToken;
-      document.getElementById('prodBtn').href = 'jolene://auth/callback' + tokenParams;
-      document.getElementById('expoBtn').href = 'exp://local-fashion-nz.ngrok.io/--/auth/callback' + tokenParams;
+      setTimeout(function() { window.location.href = prodLink; }, 100);
+      setTimeout(function() { window.location.href = expoLink; }, 1500);
     })();
   </script>
 </body>
