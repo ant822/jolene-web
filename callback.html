@@ -20,6 +20,7 @@
     .btn { display: block; background: #EC4899; color: white; padding: 16px 40px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 18px; margin: 10px auto; }
     .btn-expo { background: #14B8A6; }
     .hidden { display: none; }
+    .debug { font-size: 11px; color: #999; word-break: break-all; margin-top: 15px; text-align: left; background: #f5f5f5; padding: 10px; border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -43,8 +44,9 @@
     <div id="error" class="hidden">
       <div class="icon">✗</div>
       <div class="title title-error">Verification Failed</div>
-      <p class="msg" id="errorMsg">Something went wrong. Please try again.</p>
+      <p class="msg" id="errorMsg">Something went wrong.</p>
       <a class="btn" href="exp://local-fashion-nz.ngrok.io">Open Jolene App</a>
+      <div class="debug" id="debugInfo"></div>
     </div>
   </div>
   
@@ -53,18 +55,27 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2ZWZucHhsb2x5aGZ2eG1scm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODgzNzEsImV4cCI6MjA5MDE2NDM3MX0._T33MOe7-My0uE-9GKGmuh8nOUJQbRfJlbXJySNYIjs';
     
     async function verifyEmail() {
+      let debugText = '';
       try {
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         const hash = window.location.hash.substring(1);
-        const params = new URLSearchParams(hash);
+        const search = window.location.search.substring(1);
+        const params = new URLSearchParams(hash || search);
         
         const accessToken = params.get('access_token');
         const refreshToken = params.get('refresh_token');
         const tokenHash = params.get('token_hash');
         const type = params.get('type') || 'signup';
         
+        debugText = 'Hash: ' + (hash ? hash.substring(0, 50) + '...' : 'none') + '\n';
+        debugText += 'Search: ' + (search ? search.substring(0, 50) + '...' : 'none') + '\n';
+        debugText += 'token_hash: ' + (tokenHash ? 'yes' : 'no') + '\n';
+        debugText += 'access_token: ' + (accessToken ? 'yes' : 'no') + '\n';
+        debugText += 'type: ' + type;
+        
         let success = false;
+        let errorMsg = '';
         
         if (accessToken && refreshToken) {
           const { error } = await supabase.auth.setSession({
@@ -72,12 +83,16 @@
             refresh_token: refreshToken
           });
           success = !error;
+          if (error) errorMsg = error.message;
         } else if (tokenHash) {
           const { error } = await supabase.auth.verifyOtp({
             token_hash: tokenHash,
             type: type
           });
           success = !error;
+          if (error) errorMsg = error.message;
+        } else {
+          errorMsg = 'No tokens found in URL';
         }
         
         document.getElementById('loading').classList.add('hidden');
@@ -87,11 +102,14 @@
           document.getElementById('prodBtn').href = 'jolene://auth/callback' + window.location.search + window.location.hash;
         } else {
           document.getElementById('error').classList.remove('hidden');
+          document.getElementById('errorMsg').textContent = errorMsg || 'Verification failed';
+          document.getElementById('debugInfo').textContent = debugText;
         }
       } catch (e) {
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('error').classList.remove('hidden');
-        document.getElementById('errorMsg').textContent = e.message || 'Verification failed. Please try again.';
+        document.getElementById('errorMsg').textContent = e.message || 'Exception occurred';
+        document.getElementById('debugInfo').textContent = debugText + '\nError: ' + e.message;
       }
     }
     
