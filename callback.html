@@ -1,119 +1,48 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jolene - Verifying...</title>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <title>Jolene - Opening App...</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, sans-serif; background: #FDF2F8; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
     .card { background: white; border-radius: 24px; padding: 40px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 10px 40px rgba(236,72,153,0.15); }
     .logo { font-family: 'Brush Script MT', cursive; font-size: 48px; color: #EC4899; margin-bottom: 10px; }
-    .icon { font-size: 60px; margin: 20px 0; }
     .spinner { width: 50px; height: 50px; border: 4px solid #FDF2F8; border-top-color: #EC4899; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .title { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
-    .title-success { color: #10B981; }
-    .title-error { color: #EF4444; }
+    .title { font-size: 22px; font-weight: 600; margin-bottom: 10px; color: #374151; }
     .msg { color: #6B7280; font-size: 16px; margin-bottom: 25px; line-height: 1.5; }
     .btn { display: block; background: #EC4899; color: white; padding: 16px 40px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 18px; margin: 10px auto; }
     .btn-expo { background: #14B8A6; }
-    .hidden { display: none; }
-    .debug { font-size: 11px; color: #999; word-break: break-all; margin-top: 15px; text-align: left; background: #f5f5f5; padding: 10px; border-radius: 8px; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo">Jolene</div>
-    
-    <div id="loading">
-      <div class="spinner"></div>
-      <div class="title">Verifying Email...</div>
-      <p class="msg">Please wait a moment.</p>
-    </div>
-    
-    <div id="success" class="hidden">
-      <div class="icon">✓</div>
-      <div class="title title-success">Email Verified!</div>
-      <p class="msg">Your email has been confirmed. You can now sign in.</p>
-      <a class="btn" id="prodBtn">Open Jolene App</a>
-      <a class="btn btn-expo" href="exp://local-fashion-nz.ngrok.io">Open in Expo Go</a>
-    </div>
-    
-    <div id="error" class="hidden">
-      <div class="icon">✗</div>
-      <div class="title title-error">Verification Failed</div>
-      <p class="msg" id="errorMsg">Something went wrong.</p>
-      <a class="btn" href="exp://local-fashion-nz.ngrok.io">Open Jolene App</a>
-      <div class="debug" id="debugInfo"></div>
-    </div>
+    <div class="spinner"></div>
+    <div class="title">Opening Jolene...</div>
+    <p class="msg">If the app doesn't open automatically, tap below:</p>
+    <a class="btn" id="prodBtn">Open Jolene App</a>
+    <a class="btn btn-expo" id="expoBtn">Open in Expo Go</a>
   </div>
   
   <script>
-    const SUPABASE_URL = 'https://uvefnpxlolyhfvxmlrmq.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2ZWZucHhsb2x5aGZ2eG1scm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODgzNzEsImV4cCI6MjA5MDE2NDM3MX0._T33MOe7-My0uE-9GKGmuh8nOUJQbRfJlbXJySNYIjs';
-    
-    async function verifyEmail() {
-      let debugText = '';
-      try {
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        const hash = window.location.hash.substring(1);
-        const search = window.location.search.substring(1);
-        const params = new URLSearchParams(hash || search);
-        
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-        const tokenHash = params.get('token_hash');
-        const type = params.get('type') || 'signup';
-        
-        debugText = 'Hash: ' + (hash ? hash.substring(0, 50) + '...' : 'none') + '\n';
-        debugText += 'Search: ' + (search ? search.substring(0, 50) + '...' : 'none') + '\n';
-        debugText += 'token_hash: ' + (tokenHash ? 'yes' : 'no') + '\n';
-        debugText += 'access_token: ' + (accessToken ? 'yes' : 'no') + '\n';
-        debugText += 'type: ' + type;
-        
-        let success = false;
-        let errorMsg = '';
-        
-        if (accessToken && refreshToken) {
-          const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          });
-          success = !error;
-          if (error) errorMsg = error.message;
-        } else if (tokenHash) {
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: tokenHash,
-            type: type
-          });
-          success = !error;
-          if (error) errorMsg = error.message;
-        } else {
-          errorMsg = 'No tokens found in URL';
-        }
-        
-        document.getElementById('loading').classList.add('hidden');
-        
-        if (success) {
-          document.getElementById('success').classList.remove('hidden');
-          document.getElementById('prodBtn').href = 'jolene://auth/callback' + window.location.search + window.location.hash;
-        } else {
-          document.getElementById('error').classList.remove('hidden');
-          document.getElementById('errorMsg').textContent = errorMsg || 'Verification failed';
-          document.getElementById('debugInfo').textContent = debugText;
-        }
-      } catch (e) {
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('error').classList.remove('hidden');
-        document.getElementById('errorMsg').textContent = e.message || 'Exception occurred';
-        document.getElementById('debugInfo').textContent = debugText + '\nError: ' + e.message;
-      }
-    }
-    
-    verifyEmail();
+    (function() {
+      var hash = window.location.hash;
+      var search = window.location.search;
+      var tokens = hash || search;
+      
+      // Build deep links with tokens
+      var prodLink = 'jolene://auth/callback' + search + hash;
+      var expoLink = 'exp://local-fashion-nz.ngrok.io/--/auth/callback' + tokens;
+      
+      document.getElementById('prodBtn').href = prodLink;
+      document.getElementById('expoBtn').href = expoLink;
+      
+      // Auto-open Expo Go with tokens
+      window.location.href = expoLink;
+    })();
   </script>
 </body>
 </html>
