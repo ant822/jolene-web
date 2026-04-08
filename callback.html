@@ -6,45 +6,45 @@
   <title>Jolene - Verifying</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, sans-serif; background: #FDF2F8; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .card { background: white; border-radius: 24px; padding: 40px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 10px 40px rgba(236,72,153,0.15); }
-    .logo { font-family: 'Brush Script MT', cursive; font-size: 48px; color: #EC4899; margin-bottom: 20px; }
-    .spinner { width: 50px; height: 50px; border: 4px solid #FDF2F8; border-top-color: #EC4899; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+    body { font-family: -apple-system, sans-serif; background: linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .card { background: white; border-radius: 24px; padding: 40px; max-width: 340px; text-align: center; box-shadow: 0 10px 40px rgba(236,72,153,0.15); }
+    .logo { font-size: 48px; margin-bottom: 16px; }
+    h1 { font-size: 24px; color: #1F2937; margin-bottom: 8px; }
+    p { color: #6B7280; font-size: 16px; margin-bottom: 24px; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #FDF2F8; border-top-color: #EC4899; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 24px; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .btn { display: block; background: #EC4899; color: white; padding: 16px 40px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 18px; margin: 10px auto; }
-    .btn-expo { background: #14B8A6; }
-    .msg { color: #374151; font-size: 16px; margin: 10px 0; }
-    .sub { color: #9CA3AF; font-size: 14px; margin-top: 15px; }
+    .btn { display: inline-block; background: #EC4899; color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="logo">Jolene</div>
+    <div class="logo">👗</div>
+    <h1>Welcome to Jolene!</h1>
+    <p id="msg">Verifying your email...</p>
     <div class="spinner" id="spinner"></div>
-    <p class="msg" id="msg">Opening Jolene app...</p>
-    <a class="btn" id="btn" style="display:none;">Open Jolene App</a>
-    <a class="btn btn-expo" id="expoBtn" style="display:none;">Open in Expo Go</a>
-    <p class="sub" id="sub"></p>
+    <a class="btn" id="btn" style="display:none;" href="#">Open Jolene</a>
   </div>
   <script>
     (function() {
-      var params = window.location.search;
-      var hash = window.location.hash;
-      var prodLink = 'jolene://auth/callback' + params + hash;
-      var expoLink = 'exp://local-fashion-nz.ngrok.io/--/auth/callback' + params + hash;
+      var params = window.location.search || '';
+      if (window.location.hash) {
+        params = params ? params + '&' + window.location.hash.substring(1) : '?' + window.location.hash.substring(1);
+      }
       
-      document.getElementById('btn').href = prodLink;
-      document.getElementById('expoBtn').href = expoLink;
+      var deepLink = 'jolene://auth/callback' + params;
+      var expoLink = 'exp://local-fashion-nz.ngrok.io/--/auth/callback' + params;
       
-      window.location.href = prodLink;
+      document.getElementById('btn').href = deepLink;
       
+      // Try native app first
+      window.location.href = deepLink;
+      
+      // Fallback after 2 seconds
       setTimeout(function() {
         document.getElementById('spinner').style.display = 'none';
-        document.getElementById('msg').textContent = 'Tap to open:';
-        document.getElementById('btn').style.display = 'block';
-        document.getElementById('expoBtn').style.display = 'block';
-        document.getElementById('sub').textContent = '';
-      }, 1500);
+        document.getElementById('msg').textContent = 'Tap to open the app';
+        document.getElementById('btn').style.display = 'inline-block';
+      }, 2000);
     })();
   </script>
 </body>
